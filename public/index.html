@@ -9,7 +9,7 @@
 		.myForm {position: fixed; bottom: 0; left: .3%; width: 66%;}
 		.rooms, .conversations {height: 93.5vh; overflow-y: scroll;}
 		.rooms {height: 100vh; border-left: 1px solid #ccc; border-bottom: 1px solid #ccc;}
-		.sidebarItem{height: 50vh; border-bottom: 1px solid #ccc;}
+		.sidebarItem{height: 33vh; border-bottom: 1px solid #ccc;}
 		#conversation { list-style-type: none; margin: 0; padding: 0; }
     #conversation li { padding: 5px 10px; }
     #conversation li:nth-child(odd) { background: #eee; }
@@ -36,7 +36,7 @@
       <div>
 	      <div id="room creation"></div>
 	      <div class="input-group">
-	       	<input id="roomname"class="form-control" type="text"/>
+	       	<input id="roomname" class="form-control" type="text"/>
 	    		<span class="input-group-btn">
 	    			<button id="roombutton" class="btn btn-info">Create Room</button>
 	    		</span>
@@ -52,6 +52,17 @@
       <div>
       	<ul id="users" class="list-unstyled"></ul>
       </div>
+    </div>
+
+    <div class="col-xs-12 sidebarItem">
+      <h1>FileLoader</h1>
+      <div id='uploadArea' class="input-group">
+        <input type="file" id="fileBox" class="form-control"  placeholder="chose file to upload">      
+        <span class="input-group-btn">
+          <button type='button' id='uploadButton'  class="btn btn-info">Upload</button>
+        </span>
+      </div>
+      <div id="statusArea"></div>
     </div>
   </div>
 	
