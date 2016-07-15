@@ -17,6 +17,6 @@ We recommend the following libraries, yet it’s possible to use others:
 +1.Express: basic framework for creating applications;
 2.Async: module for working with the asynchronous aspects of JavaScript code;
 +3.Socket.IO: library for providing a real-time connection to the server;
-4.Mongodb, Mongoose: module for connecting and an object wrapper for Mongodb database;
++4.Mongodb, Mongoose: module for connecting and an object wrapper for Mongodb database;
 5.Winston: logging module;
 6.Jade, Swig, EJS: template modules.

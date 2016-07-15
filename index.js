@@ -2,22 +2,47 @@ const express = require('express');
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const mongoose = require('mongoose');
+
 const fs = require('fs');
 const url = require('url');
 const util = require('util');
 const path = require('path');
 const mime = require('mime');
 
+
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost/socketsChat', (err) => {
+    if (err) { console.log(err) }
+});
+
+const User = mongoose.model('User', {
+    name: String,
+    messages: [{
+      txt: String, 
+      date: Date
+    }]
+});
+const Room = mongoose.model('Room', {
+    name: String
+});
+
 const dir = `./tmp/`;
-let usernames = {};
+
 let uploadedFiles = {};
 let rooms = ['Lobby'];
+let usernames = {};
+
+User.find().then( res => res.forEach( key => usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
+Room.find().then( res => res.forEach( key => rooms = [...rooms, key.name] ));
 
 
+app.set("views", __dirname + "/views");
+app.set("view engine", "jade");
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', (req, res) => {
-	res.sendFile(__dirname + '/index.html');
+	res.render("index");
 });
 
 app.get('/download', (req, res) => {
@@ -35,14 +60,14 @@ app.get('/download', (req, res) => {
   filestream.pipe(res);
 });
 
-io.sockets.on('connection', function(socket) {
-  let moreData = (name) => {
+io.sockets.on('connection', socket => {
+  let moreData = name => {
     let place = uploadedFiles[name].downloaded / 524288;
     let percent = (uploadedFiles[name].downloaded / uploadedFiles[name].uploadedFilesize) * 100;
     socket.emit('moreData', { place: place, percent: percent});
   }
 
-  socket.on('disconnect', function() {
+  socket.on('disconnect', () => {
     delete usernames[socket.username];
     io.sockets.emit('updateusers', usernames);
     socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
@@ -50,12 +75,25 @@ io.sockets.on('connection', function(socket) {
   });
 
 
-  socket.on('create room', function(room) {
-    rooms = [...rooms, room];
-    io.sockets.emit('updaterooms', rooms, socket.room);
+  socket.on('create room', room => {
+    let newRoom = new Room({ name: room });
+    newRoom.save().then((res) => {
+      Room.find().sort({ name: 1 }).then((res)=>{
+        res.forEach((key)=>{
+          rooms = [...rooms, key.name];
+        })
+
+        io.sockets.emit('updaterooms', rooms, socket.room);
+      }).catch((err) => {
+        console.log(err);
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   });
 
-  socket.on('switchRoom', function(newroom) {
+  socket.on('switchRoom', newroom => {
     socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', socket.username + ' has left this room');
     socket.leave(socket.room);
    
@@ -67,23 +105,36 @@ io.sockets.on('connection', function(socket) {
     socket.emit('updaterooms', rooms, newroom, socket.username);
   });
 
-  socket.on('sendchat', function(data) {
-  	usernames[socket.username].messages = [...usernames[socket.username].messages, {txt: data, date: new Date()}];
-    io.sockets["in"](socket.room).emit('updatechat', socket.username, data)
+  socket.on('sendchat', data => {
+  	usernames[socket._id].messages = [...usernames[socket._id].messages, {txt: data, date: new Date()}];
+    User.update({'_id': socket._id}, {'name': socket.name, 'messages': usernames[socket._id].messages}).then((res) => {
+      io.sockets["in"](socket.room).emit('updatechat', socket.username, data)
+    }).catch((err) => {
+      console.log(err);
+    });
   });
 
-  socket.on('adduser', function(username) {
+  socket.on('adduser', username => {
+    username = username ? username : `user #${usernames.length}`;
+    console.log(username);
     socket.username = username;
     socket.room = 'Lobby';
-    usernames[username] = {name: username, messages:[]};
-    socket.join('Lobby');
-    socket.emit('updatechat', 'SERVER', 'you have connected to Lobby');
-    socket.broadcast.to('Lobby').emit('updatechat', 'SERVER', username + ' has connected to this room');
-    socket.emit('updaterooms', rooms, 'Lobby');
-    io.sockets.emit('udateusers', usernames);
+    let newUser = new User({ name: username });
+    newUser.save().then((res) => {
+      usernames[res._id] = {name: res.name, messages:[], id: res._id};
+      socket._id = res._id;
+      socket.join('Lobby');
+      socket.emit('updatechat', 'SERVER', 'you have connected to Lobby');
+      socket.broadcast.to('Lobby').emit('updatechat', 'SERVER', res.name + ' has connected to this room');
+      socket.emit('updaterooms', rooms, 'Lobby');
+      io.sockets.emit('updateusers', usernames);
+    })
+    .catch((err) => {
+      console.log(err);
+    });    
   });
 
-  socket.on('start', (data) => { 
+  socket.on('start', data => { 
     uploadedFiles[data.name] = { 
       uploadedFilesize: data.size,
       data: "",
@@ -103,7 +154,7 @@ io.sockets.on('connection', function(socket) {
     });
   });
   
-  socket.on('upload', (data) => {
+  socket.on('upload', data => {
     let name = data.name;
     uploadedFiles[name].downloaded += data.data.length;
     uploadedFiles[name].data += data.data;
@@ -123,6 +174,6 @@ io.sockets.on('connection', function(socket) {
   });
 });
 
-http.listen(3001, ()=>{
+http.listen(3001, () => {
 	console.log('listening on 3001');
 });

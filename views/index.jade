@@ -1,0 +1,42 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Sockets chat
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css')
+    link(rel='stylesheet', href='./css/app.css')
+  body
+    .col-xs-8.conversations
+      h1#helloID
+      div
+        ul#conversation.list-unstyled
+      .input-group.myForm
+        input#data.form-control(type='text')
+        span.input-group-btn
+          button#datasend.btn.btn-info Send
+    .col-xs-4.rooms
+      .col-xs-12.sidebarItem
+        h1 Rooms
+        div
+          div(id='room creation')
+          .input-group
+            input#roomname.form-control(type='text')
+            span.input-group-btn
+              button#roombutton.btn.btn-info Create Room
+        div
+          ul#rooms.list-unstyled
+      .col-xs-12.sidebarItem
+        h1 Users
+        div
+          ul#users.list-unstyled
+      .col-xs-12.sidebarItem
+        h1 FileLoader
+        #uploadArea.input-group
+          input#fileBox.form-control(type='file', placeholder='chose file to upload')
+          span.input-group-btn
+            button#uploadButton.btn.btn-info(type='button') Upload
+        #statusArea
+    script(src='/socket.io/socket.io.js')
+    script(src='http://code.jquery.com/jquery-1.11.1.js')
+    script(src='./js/app.js')

@@ -1,0 +1,7 @@
+.myForm {position: fixed; bottom: 0; left: .3%; width: 66%;}
+.rooms, .conversations {height: 93.5vh; overflow-y: scroll;}
+.rooms {height: 100vh; border-left: 1px solid #ccc; border-bottom: 1px solid #ccc;}
+.sidebarItem{height: 33vh; border-bottom: 1px solid #ccc;}
+#conversation { list-style-type: none; margin: 0; padding: 0; }
+#conversation li { padding: 5px 10px; }
+#conversation li:nth-child(odd) { background: #eee; }

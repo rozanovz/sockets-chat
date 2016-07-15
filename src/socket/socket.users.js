@@ -7,6 +7,8 @@ socket.on('updateusers', users => {
     let usersEl = document.getElementById('users');
     
     usersEl.innerHTML = '';
+
+    console.log(users);
     
     $.each(users, (key, value) => {
         let li = document.createElement("li");
