@@ -20,7 +20,7 @@ mongoose.connect('mongodb://localhost/socketsChat', (err) => {
 });
 
 
-
+const Room = mongoose.model('Room', { name: String });
 const User = mongoose.model('User', {
     name: String,
     messages: [{
@@ -28,23 +28,15 @@ const User = mongoose.model('User', {
       date: Date
     }]
 });
-const Room = mongoose.model('Room', {
-    name: String
-});
 
-const dir = `./tmp/`;
-
-let uploadedFiles = {};
 let rooms = ['Lobby'];
 let usernames = {};
+let uploadedFiles = {};
 
-
-User.find().then( res => res.forEach( key => usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
 Room.find().then( res => res.forEach( key => rooms = [...rooms, key.name] ));
+User.find().then( res => res.forEach( key => usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
 
-app.get('/', (req, res) => {
-	res.render("index");
-});
+app.get('/', (req, res) => res.render("index"));
 
 app.get('/download', (req, res) => {
   let file = `${__dirname}/tmp/${url.parse(req.url, true).query.name}`;
@@ -141,9 +133,9 @@ io.sockets.on('connection', socket => {
       name: data.name
     }
     
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    if (!fs.existsSync(`./tmp/`)) fs.mkdirSync(`./tmp/`);
 
-    fs.open(`${dir}${data.name}`, 'a', 0755, (err, fd) => {
+    fs.open(`./tmp/${data.name}`, 'a', 0755, (err, fd) => {
       if (err) {
         console.log(err);
       } else {
