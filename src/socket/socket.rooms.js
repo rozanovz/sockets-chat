@@ -1,9 +1,8 @@
-import { switchRoom } from '../utilities/chatUtils';
+import chatUtils  from '../utilities/chatUtils';
 import { socket } from '../constants/constants';
 
 socket.on('updaterooms', (rooms, current_room) => {
-    let roomsEl = document.getElementById('rooms');
-    roomsEl.innerHTML = '';
+    document.getElementById('rooms').innerHTML = '';
 
     $.each(rooms, (key, value) => {
         let li = document.createElement('li');
@@ -11,19 +10,15 @@ socket.on('updaterooms', (rooms, current_room) => {
             li.innerHTML = `
             <h4>
                 <i class="glyphicon glyphicon-headphones"></i> ${value}
-            </h4>
-            `;
-        	roomsEl.appendChild(li);
-                    
+            </h4>`;
+        	document.getElementById('rooms').appendChild(li);
         } else { 
             li.innerHTML = `
             <h4>
                 <i class="glyphicon glyphicon-headphones"></i> 
                 <a href="#"> <span>${value}</span> </a>
-            </h4>
-            `;
-
-            roomsEl.appendChild(li);
+            </h4>`;
+            document.getElementById('rooms').appendChild(li);
         }
     });
 });

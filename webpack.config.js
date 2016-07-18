@@ -3,7 +3,7 @@ module.exports = {
     app: './src/index',
   },
   output: {
-    filename: './public/app.js'
+    filename: './public/js/app.js'
   },
   devTools: 'source-map',
   module:{

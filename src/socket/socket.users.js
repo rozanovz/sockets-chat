@@ -1,14 +1,10 @@
-import { dateGet } from '../utilities/chatUtils';
+import chatUtils from '../utilities/chatUtils';
 import { socket } from '../constants/constants';
 
 socket.on('updateusers', users => {
     let userMessages = [];
-    let conversation = document.getElementById('conversation');  
-    let usersEl = document.getElementById('users');
-    
-    usersEl.innerHTML = '';
 
-    console.log(users);
+    document.getElementById('users').innerHTML = '';    
     
     $.each(users, (key, value) => {
         let li = document.createElement("li");
@@ -17,18 +13,18 @@ socket.on('updateusers', users => {
                 <i class="glyphicon glyphicon-user"></i> <span>${value.name}</span>
             </h4>
         `;
-       usersEl.appendChild(li);
+       document.getElementById('users').appendChild(li);
 
        if(value.messages.length > 0){
 		   	value.messages.forEach( key => {
                 let li = document.createElement("li");
-		   		li.innerHTML = `(${dateGet(key.date)}) ${value.name} :</b> ${key.txt}`;
+		   		li.innerHTML = `(${chatUtils.dateGet(key.date)}) ${value.name} :</b> ${key.txt}`;
 		   		userMessages = [...userMessages, li];
 		   	});
        }
     });
 
     userMessages.sort().forEach( key => {
-    	conversation.appendChild(key);
+    	document.getElementById('conversation').appendChild(key);
     });
 });
