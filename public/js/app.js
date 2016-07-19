@@ -212,12 +212,10 @@
 	var _constants = __webpack_require__(2);
 
 	_constants.socket.on('connect', function () {
-	   var username = prompt("What's your name: ");
-	   document.getElementById('helloID').innerHTML = 'Hello, ' + username;
-	   _constants.socket.emit('adduser', username);
-	   setInterval(function () {
-	      return _constants.socket.emit("::2");
-	   }, 15000);
+	  // let username = prompt("What's your name: ");
+	  //    document.getElementById('helloID').innerHTML = `Hello, ${username}`
+	  //    socket.emit('adduser', username);
+	  //    setInterval(() => socket.emit("::2"), 15000);
 	});
 
 /***/ },

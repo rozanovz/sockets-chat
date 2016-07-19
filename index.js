@@ -1,170 +1,62 @@
+//server utils
 const express = require('express');
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
+const MongoStore = require('connect-mongo');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 
-const fs = require('fs');
-const url = require('url');
-const util = require('util');
-const path = require('path');
-const mime = require('mime');
+//constants
+const store = require('./app/constants/index');
 
+//socket listener
+const connectSocket = require('./app/sockets/index');
 
-app.set("views", __dirname + "/views");
+//mongo models
+const User = require('./app/models/User');
+const Room = require('./app/models/User');
+
+//mongoose configs
+mongoose.Promise = global.Promise;
+mongoose.connect(`mongodb://localhost/socketsChat`);
+
+//express app controllers
+const homeCtrl = require('./app/ctrls/home.ctrl');
+const chatCtrl = require('./app/ctrls/chat.ctrl');
+const downloadCtrl = require('./app/ctrls/download.ctrl');
+const authCtrl = require('./app/ctrls/auth.ctrl');
+
+//express configs
+app.set("views", __dirname + "/app/views");
 app.set("view engine", "jade");
 app.use(express.static(__dirname + '/public'));
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/socketsChat', (err) => {
-    if (err) { console.log(err) }
-});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
+//express routes
+app.get('/', homeCtrl);
+app.get('/chat', chatCtrl);
+app.get('/download', downloadCtrl);
+app.post('/auth', authCtrl);
 
-const Room = mongoose.model('Room', { name: String });
-const User = mongoose.model('User', {
-    name: String,
-    messages: [{
-      txt: String, 
-      date: Date
-    }]
-});
+//sockets listeners
+io.sockets.on('connection', connectSocket.bind(io)/*socket => {
+  Room.find().then( res => res.forEach( key => store.rooms = [...store.rooms, key.name] ));
+  User.find().then( res => res.forEach( key => store.usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
 
-let rooms = ['Lobby'];
-let usernames = {};
-let uploadedFiles = {};
+  socket.on('disconnect', disconnect.bind(socket, io));
+  socket.on('create room', createRoom.bind(socket, io));
+  socket.on('switchRoom', switchRoom.bind(socket, io));
+  socket.on('sendchat', sendChat.bind(socket, io));
+  socket.on('adduser', addUser.bind(socket, io));
+  socket.on('start', startUpload.bind(socket, io));
+  socket.on('upload', upload.bind(socket, io));
+}*/);
 
-Room.find().then( res => res.forEach( key => rooms = [...rooms, key.name] ));
-User.find().then( res => res.forEach( key => usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
-
-app.get('/', (req, res) => res.render("index"));
-
-app.get('/download', (req, res) => {
-  let file = `${__dirname}/tmp/${url.parse(req.url, true).query.name}`;
-  res.setHeader('Content-disposition', `attachment; filename=${path.basename(file)}`);
-  res.setHeader('Content-type', mime.lookup(file));
-  fs.createReadStream(file).pipe(res);
-});
-
-io.sockets.on('connection', socket => {
-  let moreData = name => {
-    let place = uploadedFiles[name].downloaded / 524288;
-    let percent = (uploadedFiles[name].downloaded / uploadedFiles[name].uploadedFilesize) * 100;
-    socket.emit('moreData', { place: place, percent: percent});
-  }
-
-  socket.on('disconnect', () => {
-    delete usernames[socket.username];
-    io.sockets.emit('updateusers', usernames);
-    socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected')
-          .leave(socket.room);
-  });
-
-
-  socket.on('create room', room => {
-    let newRoom = new Room({ name: room });
-    newRoom.save().then((res) => {
-      Room.find().sort({ name: 1 }).then((res)=>{
-        res.forEach((key)=>{
-          rooms = [...rooms, key.name];
-        })
-
-        io.sockets.emit('updaterooms', rooms, socket.room);
-      }).catch((err) => {
-        console.log(err);
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-  });
-
-  socket.on('switchRoom', newroom => {
-    socket.broadcast.to(socket.room)
-          .emit('updatechat', 'SERVER', socket.username + ' has left this room')
-          .leave(socket.room)
-          .join(newroom)
-          .emit('updatechat', 'SERVER', 'you have connected to ' + newroom)
-          .broadcast.to(newroom)
-          .emit('updatechat', 'SERVER', socket.username + ' has joined this room')
-          .emit('updaterooms', rooms, newroom, socket.username);
-    socket.room = newroom;
-  });
-
-  socket.on('sendchat', data => {
-  	usernames[socket._id].messages = [...usernames[socket._id].messages, {txt: data, date: new Date()}];
-    
-    User.update({'_id': socket._id}, {'name': socket.name, 'messages': usernames[socket._id].messages})
-    .then(res => {
-      io.sockets["in"](socket.room).emit('updatechat', socket.username, data)
-    }).catch(err => {
-      console.log(err);
-    });
-  });
-
-  socket.on('adduser', username => {
-    username = username ? username : `user #${usernames.length}`;
-
-    socket.username = username;
-    socket.room = 'Lobby';
-   
-    let newUser = new User({ name: username });
-    
-    newUser.save().then(res => {
-      usernames[res._id] = {name: res.name, messages:[], id: res._id};
-      
-      socket._id = res._id;
-      socket.join('Lobby')
-            .emit('updatechat', 'SERVER', 'you have connected to Lobby')
-            .broadcast.to('Lobby').emit('updatechat', 'SERVER', res.name + ' has connected to this room')
-            .emit('updaterooms', rooms, 'Lobby');
-
-      io.sockets.emit('updateusers', usernames);
-    })
-    .catch(err => {
-      console.log(err);
-    });    
-  });
-
-  socket.on('start', data => { 
-    uploadedFiles[data.name] = { 
-      uploadedFilesize: data.size,
-      data: "",
-      downloaded: 0,
-      name: data.name
-    }
-    
-    if (!fs.existsSync(`./tmp/`)) fs.mkdirSync(`./tmp/`);
-
-    fs.open(`./tmp/${data.name}`, 'a', 0755, (err, fd) => {
-      if (err) {
-        console.log(err);
-      } else {
-        uploadedFiles[data.name].handler = fd;
-        socket.emit('moreData', {place : 0, percent : 0});
-      }
-    });
-  });
-  
-  socket.on('upload', data => {
-    let name = data.name;
-    uploadedFiles[name].downloaded += data.data.length;
-    uploadedFiles[name].data += data.data;
-    
-    if (uploadedFiles[name].downloaded == uploadedFiles[name].uploadedFilesize) {
-      fs.write(uploadedFiles[name].handler, uploadedFiles[name].data, null, 'Binary', function(err, writen){
-        io.sockets.emit('done', {link: `${name}`, user: socket.username});
-      });
-    } else if (uploadedFiles[name].data.length > 10485760){
-      fs.write(uploadedFiles[name].handler, uploadedFiles[name].data, null, 'Binary', (err, writen) => {
-        uploadedFiles[name].data = "";
-        moreData(name);
-      });
-    } else {
-      moreData(name);
-    }
-  });
-});
-
+//launching server
 http.listen(3001, () => {
 	console.log('listening on 3001');
 });

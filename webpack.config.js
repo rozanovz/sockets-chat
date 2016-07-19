@@ -1,9 +1,10 @@
 module.exports = {
   entry: {
-    app: './src/index',
+    app: './app/src/chat/index',
+    auth: './app/src/auth/index'
   },
   output: {
-    filename: './public/js/app.js'
+    filename: './public/js/[name].js'
   },
   devTools: 'source-map',
   module:{

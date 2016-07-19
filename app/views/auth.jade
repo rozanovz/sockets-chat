@@ -1,0 +1,18 @@
+doctype html
+html(lang='en')
+	head
+		meta(charset='UTF-8')
+		title Sockets chat
+		link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+		link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css')
+		link(rel='stylesheet', href='./css/app.css')
+	body
+	.form-group
+		label(for='username') User Name
+		input#username.form-control(type='text', placeholder='Username')
+	.form-group
+		label(for='password') Password
+		input#password.form-control(type='password', placeholder='Password')
+	button#submitButton.btn.btn-info(type='submit') Submit
+	script(src='http://code.jquery.com/jquery-1.11.1.js')
+	script(src='./js/auth.js')
