@@ -267,16 +267,37 @@
 	_constants.socket.on('updaterooms', function (rooms, current_room) {
 	    document.getElementById('rooms').innerHTML = '';
 
-	    $.each(rooms, function (key, value) {
-	        var li = document.createElement('li');
-	        if (value == current_room) {
-	            li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-headphones"></i> ' + value + '\n            </h4>';
-	            document.getElementById('rooms').appendChild(li);
-	        } else {
-	            li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-headphones"></i> \n                <a href="#"> <span>' + value + '</span> </a>\n            </h4>';
-	            document.getElementById('rooms').appendChild(li);
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	        for (var _iterator = rooms[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var value = _step.value;
+
+	            var li = document.createElement('li');
+	            if (value == current_room) {
+	                li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-headphones"></i> ' + value + '\n            </h4>';
+	                document.getElementById('rooms').appendChild(li);
+	            } else {
+	                li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-headphones"></i> \n                <a href="#"> <span>' + value + '</span> </a>\n            </h4>';
+	                document.getElementById('rooms').appendChild(li);
+	            }
 	        }
-	    });
+	    } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion && _iterator.return) {
+	                _iterator.return();
+	            }
+	        } finally {
+	            if (_didIteratorError) {
+	                throw _iteratorError;
+	            }
+	        }
+	    }
 	});
 
 /***/ },
@@ -300,19 +321,23 @@
 
 	    document.getElementById('users').innerHTML = '';
 
-	    $.each(users, function (key, value) {
+	    var _loop = function _loop(value) {
 	        var li = document.createElement("li");
-	        li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-user"></i> <span>' + value.name + '</span>\n            </h4>\n        ';
+	        li.innerHTML = '\n            <h4>\n                <i class="glyphicon glyphicon-user"></i> <span>' + users[value].name + '</span>\n            </h4>\n        ';
 	        document.getElementById('users').appendChild(li);
 
-	        if (value.messages.length > 0) {
-	            value.messages.forEach(function (key) {
+	        if (users[value].messages.length > 0) {
+	            users[value].messages.forEach(function (key) {
 	                var li = document.createElement("li");
-	                li.innerHTML = '(' + _chatUtils2.default.dateGet(key.date) + ') ' + value.name + ' :</b> ' + key.txt;
+	                li.innerHTML = '(' + _chatUtils2.default.dateGet(key.date) + ') ' + users[value].name + ' :</b> ' + key.txt;
 	                userMessages = [].concat(_toConsumableArray(userMessages), [li]);
 	            });
 	        }
-	    });
+	    };
+
+	    for (var value in users) {
+	        _loop(value);
+	    };
 
 	    userMessages.sort().forEach(function (key) {
 	        document.getElementById('conversation').appendChild(key);

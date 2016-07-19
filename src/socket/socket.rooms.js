@@ -4,14 +4,14 @@ import { socket } from '../constants/constants';
 socket.on('updaterooms', (rooms, current_room) => {
     document.getElementById('rooms').innerHTML = '';
 
-    $.each(rooms, (key, value) => {
+    for (let value of rooms){
         let li = document.createElement('li');
         if(value == current_room) {
             li.innerHTML = `
             <h4>
                 <i class="glyphicon glyphicon-headphones"></i> ${value}
             </h4>`;
-        	document.getElementById('rooms').appendChild(li);
+            document.getElementById('rooms').appendChild(li);
         } else { 
             li.innerHTML = `
             <h4>
@@ -20,5 +20,5 @@ socket.on('updaterooms', (rooms, current_room) => {
             </h4>`;
             document.getElementById('rooms').appendChild(li);
         }
-    });
+    }
 });
