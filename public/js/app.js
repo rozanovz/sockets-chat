@@ -79,6 +79,7 @@
 	    document.getElementById('roomname').addEventListener('keypress', function (event) {
 	        return _chatUtils2.default.createOnEvent(event, null, 'create room');
 	    });
+	    console.log('listeners added');
 	})();
 
 /***/ },
@@ -183,6 +184,8 @@
 
 	__webpack_require__(8);
 
+	__webpack_require__(9);
+
 /***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
@@ -199,7 +202,7 @@
 
 	_constants.socket.on('updatechat', function (username, data) {
 		var li = document.createElement('li');
-		li.innerHTML = '(' + _chatUtils2.default.dateGet() + ') ' + username + ':</b> ' + data + ')';
+		li.innerHTML = '(' + _chatUtils2.default.dateGet() + ') ' + username + ':</b> ' + data;
 		document.getElementById('conversation').appendChild(li);
 	});
 
@@ -212,10 +215,10 @@
 	var _constants = __webpack_require__(2);
 
 	_constants.socket.on('connect', function () {
-	  // let username = prompt("What's your name: ");
-	  //    document.getElementById('helloID').innerHTML = `Hello, ${username}`
-	  //    socket.emit('adduser', username);
-	  //    setInterval(() => socket.emit("::2"), 15000);
+	    _constants.socket.emit('getUser', sessionStorage.getItem('token'));
+	    setInterval(function () {
+	        return _constants.socket.emit("::2");
+	    }, 15000);
 	});
 
 /***/ },
@@ -340,6 +343,18 @@
 	    userMessages.sort().forEach(function (key) {
 	        document.getElementById('conversation').appendChild(key);
 	    });
+	});
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _constants = __webpack_require__(2);
+
+	_constants.socket.on('currentUser', function (username) {
+		document.getElementById('helloID').innerHTML = 'Hello, ' + username;
 	});
 
 /***/ }

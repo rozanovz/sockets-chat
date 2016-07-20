@@ -14,12 +14,12 @@ module.exports = (io) => {
 	  Room.find().then( res => res.forEach( key => store.rooms = [...store.rooms, key.name] ));
 	  User.find().then( res => res.forEach( key => store.usernames[key._id] = {name: key.name, messages: key.messages, id: key._id}));
 
-	  socket.on('disconnect', disconnect.bind(socket, io));
-	  socket.on('create room', createRoom.bind(socket, io));
-	  socket.on('switchRoom', switchRoom.bind(socket, io));
-	  socket.on('sendchat', sendChat.bind(socket, io));
-	  socket.on('adduser', addUser.bind(socket, io));
-	  socket.on('start', startUpload.bind(socket, io));
-	  socket.on('upload', upload.bind(socket, io));
+	  socket.on('disconnect', disconnect(socket, io));
+	  socket.on('create room', createRoom(socket, io));
+	  socket.on('switchRoom', switchRoom(socket, io));
+	  socket.on('sendchat', sendChat(socket, io));
+	  socket.on('getUser', addUser(socket, io));
+	  socket.on('start', startUpload(socket, io));
+	  socket.on('upload', upload(socket, io));
 	}
 }

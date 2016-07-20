@@ -1,5 +1,5 @@
-(function(){
-	document.getElementById('submitButton').addEventListener('click', function(){
+(() => {
+	document.getElementById('submitButton').addEventListener('click', () => {
 		let username = document.getElementById('username');
 		let password = document.getElementById('password');
 		$.ajax({
@@ -7,8 +7,10 @@
 		    url: "/auth",
 		    data: JSON.stringify({username: username.value, password: password.value}),
 		    contentType: 'application/json',
-		    success: function(data) {
-	            window.location.pathname = '/chat'
+		    success: data => {
+		    	console.log(data);
+		    	sessionStorage.setItem('token', data.token);
+	            window.location.pathname = '/chat';
 	        }
 		});
 	})

@@ -56,6 +56,8 @@
 				data: JSON.stringify({ username: username.value, password: password.value }),
 				contentType: 'application/json',
 				success: function success(data) {
+					console.log(data);
+					sessionStorage.setItem('token', data.token);
 					window.location.pathname = '/chat';
 				}
 			});

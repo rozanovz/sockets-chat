@@ -14,6 +14,7 @@ import { socket } from './constants/constants';
     document.getElementById('roombutton').addEventListener('click', event => chatUtils.createOnEvent(event, 'roomname', 'create room'));
     document.getElementById('data').addEventListener('keypress', event => chatUtils.createOnEvent(event, null, 'sendchat'));   
     document.getElementById('roomname').addEventListener('keypress', event => chatUtils.createOnEvent(event, null, 'create room'));   
+    console.log('listeners added');
 })();
 
 import './socket/index';
